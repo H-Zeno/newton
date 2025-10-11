@@ -52,9 +52,29 @@ class CardboardJoint:
         hy = 0.40
         hz = 0.003
 
+        # create brown cardboard colored box mesh
+        cardboard_brown = (0.6, 0.4, 0.2)  # Brown cardboard color
+
+        # create box mesh vertices and indices
+        vertices = [
+            [-hx, -hy, -hz], [hx, -hy, -hz], [hx, hy, -hz], [-hx, hy, -hz],  # bottom face
+            [-hx, -hy, hz], [hx, -hy, hz], [hx, hy, hz], [-hx, hy, hz]       # top face
+        ]
+
+        indices = [
+            0, 1, 2, 0, 2, 3,  # bottom
+            4, 7, 6, 4, 6, 5,  # top
+            0, 4, 5, 0, 5, 1,  # front
+            2, 6, 7, 2, 7, 3,  # back
+            0, 3, 7, 0, 7, 4,  # left
+            1, 5, 6, 1, 6, 2   # right
+        ]
+
+        cardboard_mesh = newton.Mesh(vertices, indices, color=cardboard_brown)
+
         # create first link
         link_0 = builder.add_body(mass=0.2)
-        builder.add_shape_box(link_0, hx=hx, hy=hy, hz=hz)
+        builder.add_shape_mesh(link_0, mesh=cardboard_mesh)
 
         # add joints
         rot = wp.quat_from_axis_angle(wp.vec3(0.0, 0.0, 1.0), -wp.pi * 0.5)
