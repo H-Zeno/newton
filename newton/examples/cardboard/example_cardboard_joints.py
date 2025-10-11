@@ -29,6 +29,31 @@ import newton
 import newton.examples
 
 
+@wp.kernel
+def apply_boundary_torque_kernel(
+    joint_q: wp.array(dtype=float),
+    joint_f: wp.array(dtype=float),
+    min_angle: float,
+    max_angle: float,
+    target_ke: float,
+):
+    """Kernel to compute boundary torque based on joint angle limits."""
+    tid = wp.tid()
+    current_angle = joint_q[tid]
+
+    boundary_torque = 0.0
+    if current_angle > max_angle:
+        # Apply clockwise torque (negative) to restore back to limit
+        distance = current_angle - max_angle
+        boundary_torque = -target_ke * distance
+    elif current_angle < min_angle:
+        # Apply anti-clockwise torque (positive) to restore back to limit
+        distance = min_angle - current_angle
+        boundary_torque = target_ke * distance
+
+    joint_f[tid] = boundary_torque
+
+
 class CardboardJoint:
     def __init__(self, viewer):
         # setup simulation parameters first
@@ -44,8 +69,17 @@ class CardboardJoint:
 
         builder.add_articulation(key="cardboard_joint")
 
-        # define equilibrium position of the cardboard joint
-        self.joint_eq_pos = float(wp.radians(7.0))
+        self.joint_parameters = {
+            "default_joint_eq_pos": float(wp.radians(7.0)),
+            "target_ke": 50.0,
+            "target_kd": 0.7,
+            "min_joint_eq_pos": float(wp.radians(-43.0)),
+            "max_joint_eq_pos": float(wp.radians(43.0)),
+            "min_joint_limit": float(wp.radians(-178.0)),
+            "max_joint_limit": float(wp.radians(178.0)),
+        }
+
+        self.joint_eq_pos = self.joint_parameters["default_joint_eq_pos"]
 
         # define carboard plane dimensions
         hx = 0.10
@@ -86,8 +120,10 @@ class CardboardJoint:
             child_xform=wp.transform(p=wp.vec3(-hx, 0.0, 0.0), q=wp.quat_identity(dtype=wp.float32)), # make sure the joint attaches to the end of the rigid body
             mode=newton.JointMode.TARGET_POSITION,
             target=self.joint_eq_pos,
-            target_ke=50,
-            target_kd=0.7,
+            target_ke=self.joint_parameters["target_ke"],
+            target_kd=self.joint_parameters["target_kd"],
+            limit_lower=self.joint_parameters["min_joint_limit"],
+            limit_upper=self.joint_parameters["max_joint_limit"],
         )
 
         # add ground plane
@@ -136,15 +172,31 @@ class CardboardJoint:
 
             # Here we implement the controls of the joints!
             self.state_0.clear_forces()
-
             # apply forces to the model
             self.viewer.apply_forces(self.state_0)
+
+            # Apply boundary spring forces using Warp kernel
+            if self.control.joint_f is None:
+                self.control.joint_f = wp.zeros(1, dtype=float)
+
+            wp.launch(
+                apply_boundary_torque_kernel,
+                dim=1,  # Single joint
+                inputs=[
+                    self.state_0.joint_q,
+                    self.control.joint_f,
+                    self.joint_parameters["min_joint_eq_pos"],
+                    self.joint_parameters["max_joint_eq_pos"],
+                    self.joint_parameters["target_ke"],
+                ],
+            )
 
             self.contacts = self.model.collide(self.state_0)
             self.solver.step(self.state_0, self.state_1, self.control, self.contacts, self.sim_dt)
 
             # swap states
             self.state_0, self.state_1 = self.state_1, self.state_0
+
 
     def step(self):
         if self.graph:
