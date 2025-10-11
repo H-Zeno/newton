@@ -30,28 +30,51 @@ import newton.examples
 
 
 @wp.kernel
-def apply_boundary_torque_kernel(
+def apply_signed_spring_torque_kernel(
     joint_q: wp.array(dtype=float),
     joint_f: wp.array(dtype=float),
     min_angle: float,
     max_angle: float,
-    target_ke: float,
+    resistance_ke: float,
 ):
     """Kernel to compute boundary torque based on joint angle limits."""
     tid = wp.tid()
     current_angle = joint_q[tid]
-
     boundary_torque = 0.0
-    if current_angle > max_angle:
+    if current_angle > 0:
         # Apply clockwise torque (negative) to restore back to limit
-        distance = current_angle - max_angle
-        boundary_torque = -target_ke * distance
+        boundary_torque = -resistance_ke * current_angle
     elif current_angle < min_angle:
         # Apply anti-clockwise torque (positive) to restore back to limit
-        distance = min_angle - current_angle
-        boundary_torque = target_ke * distance
+        boundary_torque = resistance_ke * current_angle
 
     joint_f[tid] = boundary_torque
+
+
+@wp.kernel
+def update_equilibrium_kernel(
+    joint_q: wp.array(dtype=float),
+    joint_target: wp.array(dtype=float),
+    joint_eq_pos: wp.array(dtype=float),
+    plasticity_angle: float,
+):
+    """Kernel to update equilibrium position based on plasticity."""
+    tid = wp.tid()
+    current_angle = joint_q[tid]
+    current_eq_pos = joint_eq_pos[tid]
+
+    # Calculate difference between current angle and equilibrium
+    angle_difference = current_angle - current_eq_pos
+
+    # If difference exceeds plasticity threshold, update equilibrium
+    if wp.abs(angle_difference) > plasticity_angle:
+        # Move equilibrium toward current position, leaving plasticity_angle gap
+        if angle_difference > 0.0:
+            joint_eq_pos[tid] = current_angle - plasticity_angle
+        else:
+            joint_eq_pos[tid] = current_angle + plasticity_angle
+ 
+    joint_target[tid] = joint_eq_pos[tid]
 
 
 class CardboardJoint:
@@ -77,9 +100,12 @@ class CardboardJoint:
             "max_joint_eq_pos": float(wp.radians(43.0)),
             "min_joint_limit": float(wp.radians(-178.0)),
             "max_joint_limit": float(wp.radians(178.0)),
+            "plasticity_angle": float(wp.radians(23.0)),
+            "resistance_ke": 3.5,
         }
 
         self.joint_eq_pos = self.joint_parameters["default_joint_eq_pos"]
+        self.joint_eq_pos_array = wp.array([self.joint_eq_pos], dtype=float)
 
         # define carboard plane dimensions
         hx = 0.10
@@ -122,8 +148,8 @@ class CardboardJoint:
             target=self.joint_eq_pos,
             target_ke=self.joint_parameters["target_ke"],
             target_kd=self.joint_parameters["target_kd"],
-            limit_lower=self.joint_parameters["min_joint_limit"],
-            limit_upper=self.joint_parameters["max_joint_limit"],
+            # limit_lower=self.joint_parameters["min_joint_limit"],
+            # limit_upper=self.joint_parameters["max_joint_limit"],
         )
 
         # add ground plane
@@ -172,27 +198,41 @@ class CardboardJoint:
 
             # Here we implement the controls of the joints!
             self.state_0.clear_forces()
-            # apply forces to the model
-            self.viewer.apply_forces(self.state_0)
-
+            
+            # Update equilibrium position based on plasticity
+            wp.launch(
+                update_equilibrium_kernel,
+                dim=1,
+                inputs=[
+                    self.state_0.joint_q,
+                    self.control.joint_target,
+                    self.joint_eq_pos_array,
+                    self.joint_parameters["plasticity_angle"],
+                ],
+            )
             # Apply boundary spring forces using Warp kernel
             if self.control.joint_f is None:
                 self.control.joint_f = wp.zeros(1, dtype=float)
 
             wp.launch(
-                apply_boundary_torque_kernel,
+                apply_signed_spring_torque_kernel,
                 dim=1,  # Single joint
                 inputs=[
                     self.state_0.joint_q,
                     self.control.joint_f,
                     self.joint_parameters["min_joint_eq_pos"],
                     self.joint_parameters["max_joint_eq_pos"],
-                    self.joint_parameters["target_ke"],
+                    self.joint_parameters["resistance_ke"]
                 ],
             )
+            # apply forces to the model
+            self.viewer.apply_forces(self.state_0)
 
             self.contacts = self.model.collide(self.state_0)
             self.solver.step(self.state_0, self.state_1, self.control, self.contacts, self.sim_dt)
+
+            # Update joint coordinates from body positions after XPBD solver step
+            newton.eval_ik(self.model, self.state_1, self.state_1.joint_q, self.state_1.joint_qd)
 
             # swap states
             self.state_0, self.state_1 = self.state_1, self.state_0
