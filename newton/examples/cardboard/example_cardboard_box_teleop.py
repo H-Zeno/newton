@@ -223,12 +223,21 @@ async def main():
     )
 
     for i, _ in enumerate(piper1.joint_target_ke):
-        piper1.joint_target_ke[i] = 30.0
-        piper1.joint_target_kd[i] = 1.0
-        piper1.joint_friction[i] = 0.4
-        piper2.joint_target_ke[i] = 30.0
-        piper2.joint_target_kd[i] = 1.0
-        piper2.joint_friction[i] = 0.4
+        if i < 6:  # Arm joints (0-5)
+            piper1.joint_target_ke[i] = 30.0
+            piper1.joint_target_kd[i] = 1.0
+            piper1.joint_friction[i] = 0.4
+            piper2.joint_target_ke[i] = 30.0
+            piper2.joint_target_kd[i] = 1.0
+            piper2.joint_friction[i] = 0.4
+        else:  # Gripper joints (6-7)
+            # Higher stiffness and lower friction for faster gripper response
+            piper1.joint_target_ke[i] = 100.0
+            piper1.joint_target_kd[i] = 2.0
+            piper1.joint_friction[i] = 0.1
+            piper2.joint_target_ke[i] = 100.0
+            piper2.joint_target_kd[i] = 2.0
+            piper2.joint_friction[i] = 0.1
 
     scene.add_builder(piper1, environment=-1)
     scene.add_builder(piper2, environment=-1)
@@ -239,11 +248,10 @@ async def main():
     model = scene.finalize()
 
     # model.shape_collision_filter_pairs = []
-    print(model)
 
-    solver = newton.solvers.SolverMuJoCo(model=model, iterations=20, njmax=256, contact_stiffness_time_const=sim_dt)
-    # solver = newton.solvers.SolverXPBD(model=model, iterations=20)
-    # solver = newton.solvers.SolverFeatherstone(model=model, update_mass_matrix_interval=20)
+    solver = newton.solvers.SolverMuJoCo(model=model, iterations=20, njmax=256)
+    # solver = newton.solvers.SolverXPBD(model=model, iterations=200)
+    # solver = newton.solvers.SolverFeatherstone(model=model, update_mass_matrix_interval=1)
 
     state_0 = model.state()
     state_1 = model.state()
@@ -320,18 +328,37 @@ async def main():
                         "piper",
                         target_pos_right,
                         target_ori_euler=target_ori_right,
-                        # only fr3_joint1–fr3_joint7
                     )
+
                     joint_angles_left = ik.solve(
                         "piper",
                         target_pos_left,
                         target_ori_euler=target_ori_left,
-                        # only fr3_joint1–fr3_joint7
                     )
+                    # PyBullet returns all joint angles, so slice to get only first 6 (arm joints)
+                    arm_joints_right = joint_angles_right[:6]
+                    arm_joints_left = joint_angles_left[:6]
+
+                    # Add gripper joint positions
+                    # When closed: joint7=0.035, joint8=-0.035
+                    # When open: joint7=0.0, joint8=0.0
+                    gripper_pos_right = 0.035 if gripper_closed_right else 0.0
+                    gripper_pos_left = 0.035 if gripper_closed_left else 0.0
+
+                    # Combine arm joints (6) + gripper joints (2) for each robot
+                    joint_targets_right = arm_joints_right.tolist() + [
+                        gripper_pos_right,
+                        -gripper_pos_right,
+                    ]
+                    joint_targets_left = arm_joints_left.tolist() + [
+                        gripper_pos_left,
+                        -gripper_pos_left,
+                    ]
+
                     # set the joint targets
                     control.joint_target.assign(
                         wp.array(
-                            [0] * num_revolute_joints + joint_angles_right.tolist() + joint_angles_left.tolist(),
+                            [0] * num_revolute_joints + joint_targets_right + joint_targets_left,
                             dtype=wp.float32,
                         )
                     )

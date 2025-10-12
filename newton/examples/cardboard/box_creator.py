@@ -106,6 +106,7 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
             has_particle_collision=True,
             has_shape_collision=True,
         ),
+        key="base_collision"
     )
 
     # fix the base
@@ -150,6 +151,7 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
             has_particle_collision=True,
             has_shape_collision=True,
         ),
+        key="flap_1_collision"
     )
     
     flap_2 = box.add_body(
@@ -186,6 +188,7 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
             has_particle_collision=True,
             has_shape_collision=True,
         ),
+        key="flap_2_collision"
     )
 
     # side flaps
@@ -223,6 +226,7 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
             has_particle_collision=True,
             has_shape_collision=True,
         ),
+        key="flap_3_collision"
     )
     
     flap_4 = box.add_body(
@@ -259,6 +263,7 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
             has_particle_collision=True,
             has_shape_collision=True,
         ),
+        key="flap_4_collision"
     )
 
     # flap joints
