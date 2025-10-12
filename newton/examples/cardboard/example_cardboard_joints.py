@@ -34,8 +34,6 @@ import newton.examples
 def apply_signed_spring_torque_kernel(
     joint_q: wp.array(dtype=float),
     joint_f: wp.array(dtype=float),
-    min_angle: float,
-    max_angle: float,
     resistance_ke: float,
 ):
     """Kernel to compute boundary torque based on joint angle limits."""
@@ -43,11 +41,11 @@ def apply_signed_spring_torque_kernel(
     current_angle = joint_q[tid]
     boundary_torque = 0.0
     if current_angle > 0:
-        # Apply clockwise torque (negative) to restore back to limit
-        boundary_torque = -resistance_ke * current_angle
-    elif current_angle < min_angle:
-        # Apply anti-clockwise torque (positive) to restore back to limit
-        boundary_torque = resistance_ke * current_angle
+        # Apply clockwise torque (negative) to restore back to plane
+        boundary_torque = -resistance_ke * abs(current_angle)
+    elif current_angle < 0:
+        # Apply anti-clockwise torque (positive) to restore back to plane
+        boundary_torque = resistance_ke * abs(current_angle)
 
     joint_f[tid] = boundary_torque
 
@@ -149,8 +147,8 @@ class CardboardJoint:
             target=self.joint_eq_pos,
             target_ke=self.joint_parameters["target_ke"],
             target_kd=self.joint_parameters["target_kd"],
-            # limit_lower=self.joint_parameters["min_joint_limit"],
-            # limit_upper=self.joint_parameters["max_joint_limit"],
+            limit_lower=self.joint_parameters["min_joint_limit"],
+            limit_upper=self.joint_parameters["max_joint_limit"],
         )
 
         # add ground plane
@@ -221,8 +219,6 @@ class CardboardJoint:
                 inputs=[
                     self.state_0.joint_q,
                     self.control.joint_f,
-                    self.joint_parameters["min_joint_eq_pos"],
-                    self.joint_parameters["max_joint_eq_pos"],
                     self.joint_parameters["resistance_ke"]
                 ],
             )
