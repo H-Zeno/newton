@@ -24,15 +24,15 @@ class BoxConfiguration:
 @dataclass
 class CardboardJointConfiguration:
     default_joint_eq_pos: float = float(wp.radians(7.0))
-    target_ke: float = 11.5 #50.0
-    target_kd: float = 0.35 #0.7
-    friction: float = 0.0
+    target_ke: float = 0.115 #50.0
+    target_kd: float = 0.035 #0.7
+    friction: float = 0.05
     min_joint_eq_pos: float = float(wp.radians(-52.0))
     max_joint_eq_pos: float = float(wp.radians(52.0))
     min_joint_limit: float = float(wp.radians(-178.0))
     max_joint_limit: float = float(wp.radians(178.0))
     plasticity_angle: float = float(wp.radians(35.0))
-    resistance_ke: float = 3.7
+    resistance_ke: float = 0.05
 
 
 def create_cardboard_box_mesh(hx: float, hy: float, hz: float, color: tuple[float, float, float]) -> newton.Mesh:
