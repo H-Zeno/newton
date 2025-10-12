@@ -99,7 +99,7 @@ class CardboardJoint:
             "max_joint_eq_pos": float(wp.radians(43.0)),
             "min_joint_limit": float(wp.radians(-178.0)),
             "max_joint_limit": float(wp.radians(178.0)),
-            "plasticity_angle": float(wp.radians(23.0)),
+            "plasticity_angle": float(wp.radians(35.0)),
             "resistance_ke": 3.5,
         }
 
