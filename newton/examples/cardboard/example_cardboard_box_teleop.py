@@ -169,7 +169,7 @@ async def main():
 
     # sim params
     sim_time = 0.0
-    frame_dt = 1.0 / 500
+    frame_dt = 1.0 / 50
     substeps = 4
     sim_dt = frame_dt / substeps
 
@@ -184,7 +184,7 @@ async def main():
     box_cfg = BoxConfiguration()
         
     # Create the box to determine joint count
-    box_builder = create_box(box_cfg, joint_cfg, key="box", show_visuals=True, show_collision=True)
+    box_builder = create_box(box_cfg, joint_cfg, key="box", show_visuals=True, show_collision=False)
     num_revolute_joints = box_builder.joint_count - 1
 
     # Initialize joint equilibrium positions for all revolute joints
@@ -233,14 +233,15 @@ async def main():
     scene.add_builder(piper1, environment=-1)
     scene.add_builder(piper2, environment=-1)
 
-    scene.shape_collision_filter_pairs = []
+    # scene.shape_collision_filter_pairs = []
 
 
     model = scene.finalize()
 
-    model.shape_collision_filter_pairs = []
+    # model.shape_collision_filter_pairs = []
+    print(model)
 
-    solver = newton.solvers.SolverMuJoCo(model=model, iterations=50, njmax=256)
+    solver = newton.solvers.SolverMuJoCo(model=model, iterations=20, njmax=256, contact_stiffness_time_const=sim_dt)
     # solver = newton.solvers.SolverXPBD(model=model, iterations=20)
     # solver = newton.solvers.SolverFeatherstone(model=model, update_mass_matrix_interval=20)
 
@@ -284,8 +285,9 @@ async def main():
                     left_goal = await tactile_api.get_controller_goal("left")
 
                     # Get end-effector transforms in world frame
-                    eef_world_right = wp.transform(*state_0.body_q.numpy()[18])
-                    eef_world_left = wp.transform(*state_0.body_q.numpy()[26])
+                    index = model.body_key.index("link6")
+                    eef_world_right = wp.transform(*state_0.body_q.numpy()[index])
+                    eef_world_left = wp.transform(*state_0.body_q.numpy()[index + 8])
 
                     # Convert to robot base frame by subtracting the base offset
                     # franka1 is at (0.0, 0.5, 0.0), franka2 is at (0.0, -0.5, 0.0)
@@ -334,27 +336,27 @@ async def main():
                         )
                     )
 
-                    # # Update equilibrium position based on plasticity
-                    # wp.launch(
-                    #     joint_update_equilibrium_kernel,
-                    #     dim=num_revolute_joints,
-                    #     inputs=[
-                    #         state_0.joint_q,
-                    #         control.joint_target,
-                    #         joint_eq_pos_array,
-                    #         joint_cfg.plasticity_angle,
-                    #     ],
-                    # )
+                    # Update equilibrium position based on plasticity
+                    wp.launch(
+                        joint_update_equilibrium_kernel,
+                        dim=num_revolute_joints,
+                        inputs=[
+                            state_0.joint_q,
+                            control.joint_target,
+                            joint_eq_pos_array,
+                            joint_cfg.plasticity_angle,
+                        ],
+                    )
 
-                    # wp.launch(
-                    #     joint_apply_signed_spring_torque_kernel,
-                    #     dim=num_revolute_joints,
-                    #     inputs=[
-                    #         state_0.joint_q,
-                    #         control.joint_f,
-                    #         joint_cfg.resistance_ke
-                    #     ],
-                    # )
+                    wp.launch(
+                        joint_apply_signed_spring_torque_kernel,
+                        dim=num_revolute_joints,
+                        inputs=[
+                            state_0.joint_q,
+                            control.joint_f,
+                            joint_cfg.resistance_ke
+                        ],
+                    )
 
                     solver.step(state_0, state_1, control, contacts, sim_dt)
 

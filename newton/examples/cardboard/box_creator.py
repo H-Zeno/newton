@@ -73,7 +73,8 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
     box.add_articulation(key=key)
 
     base = box.add_body(
-        mass=box_cfg.density * box_cfg.width * box_cfg.length * box_cfg.thickness
+        mass=box_cfg.density * box_cfg.width * box_cfg.length * box_cfg.thickness,
+        key="base",
     )
 
     # Create cardboard mesh for visual appearance
@@ -117,6 +118,7 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
     # flaps
     flap_1 = box.add_body(
         mass=box_cfg.density * box_cfg.width * box_cfg.height * box_cfg.thickness,
+        key="flap_1"
     )
     
     # Create cardboard mesh for visual appearance
@@ -152,6 +154,7 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
     
     flap_2 = box.add_body(
         mass=box_cfg.density * box_cfg.width * box_cfg.height * box_cfg.thickness,
+        key="flap_2"
     )
     
     # Create cardboard mesh for visual appearance
@@ -188,6 +191,7 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
     # side flaps
     flap_3 = box.add_body(
         mass=box_cfg.density * box_cfg.length * box_cfg.height * box_cfg.thickness,
+        key="flap_3"
     )
     
     # Create cardboard mesh for visual appearance
@@ -223,6 +227,7 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
     
     flap_4 = box.add_body(
         mass=box_cfg.density * box_cfg.length * box_cfg.height * box_cfg.thickness,
+        key="flap_4"
     )
     
     # Create cardboard mesh for visual appearance
@@ -314,376 +319,385 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
         limit_upper=joint_cfg.max_joint_limit,
     )
 
-    # flap ears
-    ear_31 = box.add_body(
-        mass=box_cfg.density * box_cfg.height * box_cfg.height * box_cfg.thickness,
-    )
+    # # flap ears
+    # ear_31 = box.add_body(
+    #     mass=box_cfg.density * box_cfg.height * box_cfg.height * box_cfg.thickness,
+    #     key="ear_31"
+    # )
     
-    # Create cardboard mesh for visual appearance
-    if show_visuals:
-        ear_31_mesh = create_cardboard_box_mesh(
-            box_cfg.height / 2,
-            box_cfg.height / 2,
-            box_cfg.thickness / 2,
-            box_cfg.cardboard_color
-        )
-        box.add_shape_mesh(
-            ear_31,
-            mesh=ear_31_mesh,
-            cfg=newton.ModelBuilder.ShapeConfig(
-                is_visible=True,
-                has_particle_collision=False,
-                has_shape_collision=False,
-            ),
-        )
+    # # Create cardboard mesh for visual appearance
+    # if show_visuals:
+    #     ear_31_mesh = create_cardboard_box_mesh(
+    #         box_cfg.height / 2,
+    #         box_cfg.height / 2,
+    #         box_cfg.thickness / 2,
+    #         box_cfg.cardboard_color
+    #     )
+    #     box.add_shape_mesh(
+    #         ear_31,
+    #         mesh=ear_31_mesh,
+    #         cfg=newton.ModelBuilder.ShapeConfig(
+    #             is_visible=True,
+    #             has_particle_collision=False,
+    #             has_shape_collision=False,
+    #         ),
+    #     )
     
-    # Add collision shape
-    box.add_shape_box(
-        ear_31,
-        hx=box_cfg.height / 2 - box_cfg.contact_offset,
-        hy=box_cfg.height / 2 - box_cfg.contact_offset,
-        hz=box_cfg.thickness / 2,
-        cfg=newton.ModelBuilder.ShapeConfig(
-            is_visible=show_collision,
-            has_particle_collision=True,
-            has_shape_collision=True,
-        ),
-    )
+    # # Add collision shape
+    # box.add_shape_box(
+    #     ear_31,
+    #     hx=box_cfg.height / 2 - box_cfg.contact_offset,
+    #     hy=box_cfg.height / 2 - box_cfg.contact_offset,
+    #     hz=box_cfg.thickness / 2,
+    #     cfg=newton.ModelBuilder.ShapeConfig(
+    #         is_visible=show_collision,
+    #         has_particle_collision=True,
+    #         has_shape_collision=True,
+    #     ),
+    # )
     
-    ear_32 = box.add_body(
-        mass=box_cfg.density * box_cfg.height * box_cfg.height * box_cfg.thickness,
-    )
+    # ear_32 = box.add_body(
+    #     mass=box_cfg.density * box_cfg.height * box_cfg.height * box_cfg.thickness,
+    #     key="ear_32"
+    # )
     
-    # Create cardboard mesh for visual appearance
-    if show_visuals:
-        ear_32_mesh = create_cardboard_box_mesh(
-            box_cfg.height / 2,
-            box_cfg.height / 2,
-            box_cfg.thickness / 2,
-            box_cfg.cardboard_color
-        )
-        box.add_shape_mesh(
-            ear_32,
-            mesh=ear_32_mesh,
-            cfg=newton.ModelBuilder.ShapeConfig(
-                is_visible=True,
-                has_particle_collision=False,
-                has_shape_collision=False,
-            ),
-        )
+    # # Create cardboard mesh for visual appearance
+    # if show_visuals:
+    #     ear_32_mesh = create_cardboard_box_mesh(
+    #         box_cfg.height / 2,
+    #         box_cfg.height / 2,
+    #         box_cfg.thickness / 2,
+    #         box_cfg.cardboard_color
+    #     )
+    #     box.add_shape_mesh(
+    #         ear_32,
+    #         mesh=ear_32_mesh,
+    #         cfg=newton.ModelBuilder.ShapeConfig(
+    #             is_visible=True,
+    #             has_particle_collision=False,
+    #             has_shape_collision=False,
+    #         ),
+    #     )
     
-    # Add collision shape
-    box.add_shape_box(
-        ear_32,
-        hx=box_cfg.height / 2 - box_cfg.contact_offset,
-        hy=box_cfg.height / 2 - box_cfg.contact_offset,
-        hz=box_cfg.thickness / 2,
-        cfg=newton.ModelBuilder.ShapeConfig(
-            is_visible=show_collision,
-            has_particle_collision=True,
-            has_shape_collision=True,
-        ),
-    )
+    # # Add collision shape
+    # box.add_shape_box(
+    #     ear_32,
+    #     hx=box_cfg.height / 2 - box_cfg.contact_offset,
+    #     hy=box_cfg.height / 2 - box_cfg.contact_offset,
+    #     hz=box_cfg.thickness / 2,
+    #     cfg=newton.ModelBuilder.ShapeConfig(
+    #         is_visible=show_collision,
+    #         has_particle_collision=True,
+    #         has_shape_collision=True,
+    #     ),
+    # )
     
-    ear_41 = box.add_body(
-        mass=box_cfg.density * box_cfg.height * box_cfg.height * box_cfg.thickness,
-    )
+    # ear_41 = box.add_body(
+    #     mass=box_cfg.density * box_cfg.height * box_cfg.height * box_cfg.thickness,
+    #     key="ear_41"
+    # )
     
-    # Create cardboard mesh for visual appearance
-    if show_visuals:
-        ear_41_mesh = create_cardboard_box_mesh(
-            box_cfg.height / 2,
-            box_cfg.height / 2,
-            box_cfg.thickness / 2,
-            box_cfg.cardboard_color
-        )
-        box.add_shape_mesh(
-            ear_41,
-            mesh=ear_41_mesh,
-            cfg=newton.ModelBuilder.ShapeConfig(
-                is_visible=True,
-                has_particle_collision=False,
-                has_shape_collision=False,
-            ),
-        )
+    # # Create cardboard mesh for visual appearance
+    # if show_visuals:
+    #     ear_41_mesh = create_cardboard_box_mesh(
+    #         box_cfg.height / 2,
+    #         box_cfg.height / 2,
+    #         box_cfg.thickness / 2,
+    #         box_cfg.cardboard_color
+    #     )
+    #     box.add_shape_mesh(
+    #         ear_41,
+    #         mesh=ear_41_mesh,
+    #         cfg=newton.ModelBuilder.ShapeConfig(
+    #             is_visible=True,
+    #             has_particle_collision=False,
+    #             has_shape_collision=False,
+    #         ),
+    #     )
     
-    # Add collision shape
-    box.add_shape_box(
-        ear_41,
-        hx=box_cfg.height / 2 - box_cfg.contact_offset,
-        hy=box_cfg.height / 2 - box_cfg.contact_offset,
-        hz=box_cfg.thickness / 2,
-        cfg=newton.ModelBuilder.ShapeConfig(
-            is_visible=show_collision,
-            has_particle_collision=True,
-            has_shape_collision=True,
-        ),
-    )
+    # # Add collision shape
+    # box.add_shape_box(
+    #     ear_41,
+    #     hx=box_cfg.height / 2 - box_cfg.contact_offset,
+    #     hy=box_cfg.height / 2 - box_cfg.contact_offset,
+    #     hz=box_cfg.thickness / 2,
+    #     cfg=newton.ModelBuilder.ShapeConfig(
+    #         is_visible=show_collision,
+    #         has_particle_collision=True,
+    #         has_shape_collision=True,
+    #     ),
+    # )
     
-    ear_42 = box.add_body(
-        mass=box_cfg.density * box_cfg.height * box_cfg.height * box_cfg.thickness,
-    )
+    # ear_42 = box.add_body(
+    #     mass=box_cfg.density * box_cfg.height * box_cfg.height * box_cfg.thickness,
+    #     key="ear_42"
+    # )
     
-    # Create cardboard mesh for visual appearance
-    if show_visuals:
-        ear_42_mesh = create_cardboard_box_mesh(
-            box_cfg.height / 2,
-            box_cfg.height / 2,
-            box_cfg.thickness / 2,
-            box_cfg.cardboard_color
-        )
-        box.add_shape_mesh(
-            ear_42,
-            mesh=ear_42_mesh,
-            cfg=newton.ModelBuilder.ShapeConfig(
-                is_visible=True,
-                has_particle_collision=False,
-                has_shape_collision=False,
-            ),
-        )
+    # # Create cardboard mesh for visual appearance
+    # if show_visuals:
+    #     ear_42_mesh = create_cardboard_box_mesh(
+    #         box_cfg.height / 2,
+    #         box_cfg.height / 2,
+    #         box_cfg.thickness / 2,
+    #         box_cfg.cardboard_color
+    #     )
+    #     box.add_shape_mesh(
+    #         ear_42,
+    #         mesh=ear_42_mesh,
+    #         cfg=newton.ModelBuilder.ShapeConfig(
+    #             is_visible=True,
+    #             has_particle_collision=False,
+    #             has_shape_collision=False,
+    #         ),
+    #     )
     
-    # Add collision shape
-    box.add_shape_box(
-        ear_42,
-        hx=box_cfg.height / 2 - box_cfg.contact_offset,
-        hy=box_cfg.height / 2 - box_cfg.contact_offset,
-        hz=box_cfg.thickness / 2,
-        cfg=newton.ModelBuilder.ShapeConfig(
-            is_visible=show_collision,
-            has_particle_collision=True,
-            has_shape_collision=True,
-        ),
-    )
+    # # Add collision shape
+    # box.add_shape_box(
+    #     ear_42,
+    #     hx=box_cfg.height / 2 - box_cfg.contact_offset,
+    #     hy=box_cfg.height / 2 - box_cfg.contact_offset,
+    #     hz=box_cfg.thickness / 2,
+    #     cfg=newton.ModelBuilder.ShapeConfig(
+    #         is_visible=show_collision,
+    #         has_particle_collision=True,
+    #         has_shape_collision=True,
+    #     ),
+    # )
 
-    # flap ears joints
-    box.add_joint_revolute(
-        parent=flap_3,
-        child=ear_31,
-        parent_xform=wp.transform(p=wp.vec3(0.0, box_cfg.length / 2 - box_cfg.thickness / 2, 0.0)),
-        child_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.height / 2, 0.0)),
-        axis=wp.vec3(1.0, 0.0, 0.0),
-        mode=newton.JointMode.TARGET_POSITION,
-        target=joint_cfg.default_joint_eq_pos,
-        friction=joint_cfg.friction,
-        target_ke=joint_cfg.target_ke,
-        target_kd=joint_cfg.target_kd,
-        limit_lower=joint_cfg.min_joint_limit,
-        limit_upper=joint_cfg.max_joint_limit,
-    )
-    box.add_joint_revolute(
-        parent=flap_3,
-        child=ear_32,
-        parent_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.length / 2 + box_cfg.thickness / 2, 0.0)),
-        child_xform=wp.transform(p=wp.vec3(0.0, box_cfg.height / 2, 0.0)),
-        axis=wp.vec3(1.0, 0.0, 0.0),
-        mode=newton.JointMode.TARGET_POSITION,
-        target=joint_cfg.default_joint_eq_pos,
-        friction=joint_cfg.friction,
-        target_ke=joint_cfg.target_ke,
-        target_kd=joint_cfg.target_kd,
-        limit_lower=joint_cfg.min_joint_limit,
-        limit_upper=joint_cfg.max_joint_limit,
-    )
-    box.add_joint_revolute(
-        parent=flap_4,
-        child=ear_41,
-        parent_xform=wp.transform(p=wp.vec3(0.0, box_cfg.length / 2 - box_cfg.thickness / 2, 0.0)),
-        child_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.height / 2, 0.0)),
-        axis=wp.vec3(1.0, 0.0, 0.0),
-        mode=newton.JointMode.TARGET_POSITION,
-        target=joint_cfg.default_joint_eq_pos,
-        friction=joint_cfg.friction,
-        target_ke=joint_cfg.target_ke,
-        target_kd=joint_cfg.target_kd,
-        limit_lower=joint_cfg.min_joint_limit,
-        limit_upper=joint_cfg.max_joint_limit,
-    )
-    box.add_joint_revolute(
-        parent=flap_4,
-        child=ear_42,
-        parent_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.length / 2 + box_cfg.thickness / 2, 0.0)),
-        child_xform=wp.transform(p=wp.vec3(0.0, box_cfg.height / 2, 0.0)),
-        axis=wp.vec3(1.0, 0.0, 0.0),
-        mode=newton.JointMode.TARGET_POSITION,
-        target=joint_cfg.default_joint_eq_pos,
-        friction=joint_cfg.friction,
-        target_ke=joint_cfg.target_ke,
-        target_kd=joint_cfg.target_kd,
-        limit_lower=joint_cfg.min_joint_limit,
-        limit_upper=joint_cfg.max_joint_limit,
-    )
+    # # flap ears joints
+    # box.add_joint_revolute(
+    #     parent=flap_3,
+    #     child=ear_31,
+    #     parent_xform=wp.transform(p=wp.vec3(0.0, box_cfg.length / 2 - box_cfg.thickness / 2, 0.0)),
+    #     child_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.height / 2, 0.0)),
+    #     axis=wp.vec3(1.0, 0.0, 0.0),
+    #     mode=newton.JointMode.TARGET_POSITION,
+    #     target=joint_cfg.default_joint_eq_pos,
+    #     friction=joint_cfg.friction,
+    #     target_ke=joint_cfg.target_ke,
+    #     target_kd=joint_cfg.target_kd,
+    #     limit_lower=joint_cfg.min_joint_limit,
+    #     limit_upper=joint_cfg.max_joint_limit,
+    # )
+    # box.add_joint_revolute(
+    #     parent=flap_3,
+    #     child=ear_32,
+    #     parent_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.length / 2 + box_cfg.thickness / 2, 0.0)),
+    #     child_xform=wp.transform(p=wp.vec3(0.0, box_cfg.height / 2, 0.0)),
+    #     axis=wp.vec3(1.0, 0.0, 0.0),
+    #     mode=newton.JointMode.TARGET_POSITION,
+    #     target=joint_cfg.default_joint_eq_pos,
+    #     friction=joint_cfg.friction,
+    #     target_ke=joint_cfg.target_ke,
+    #     target_kd=joint_cfg.target_kd,
+    #     limit_lower=joint_cfg.min_joint_limit,
+    #     limit_upper=joint_cfg.max_joint_limit,
+    # )
+    # box.add_joint_revolute(
+    #     parent=flap_4,
+    #     child=ear_41,
+    #     parent_xform=wp.transform(p=wp.vec3(0.0, box_cfg.length / 2 - box_cfg.thickness / 2, 0.0)),
+    #     child_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.height / 2, 0.0)),
+    #     axis=wp.vec3(1.0, 0.0, 0.0),
+    #     mode=newton.JointMode.TARGET_POSITION,
+    #     target=joint_cfg.default_joint_eq_pos,
+    #     friction=joint_cfg.friction,
+    #     target_ke=joint_cfg.target_ke,
+    #     target_kd=joint_cfg.target_kd,
+    #     limit_lower=joint_cfg.min_joint_limit,
+    #     limit_upper=joint_cfg.max_joint_limit,
+    # )
+    # box.add_joint_revolute(
+    #     parent=flap_4,
+    #     child=ear_42,
+    #     parent_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.length / 2 + box_cfg.thickness / 2, 0.0)),
+    #     child_xform=wp.transform(p=wp.vec3(0.0, box_cfg.height / 2, 0.0)),
+    #     axis=wp.vec3(1.0, 0.0, 0.0),
+    #     mode=newton.JointMode.TARGET_POSITION,
+    #     target=joint_cfg.default_joint_eq_pos,
+    #     friction=joint_cfg.friction,
+    #     target_ke=joint_cfg.target_ke,
+    #     target_kd=joint_cfg.target_kd,
+    #     limit_lower=joint_cfg.min_joint_limit,
+    #     limit_upper=joint_cfg.max_joint_limit,
+    # )
 
-    # additional flaps
-    flap_11 = box.add_body(
-        mass=box_cfg.density * box_cfg.width * box_cfg.thickness * box_cfg.thickness,
-    )
-    
-    # Create cardboard mesh for visual appearance (thin flap)
-    if show_visuals:
-        flap_11_mesh = create_cardboard_box_mesh(
-            box_cfg.width / 2,
-            box_cfg.thickness,
-            box_cfg.thickness / 2,
-            box_cfg.cardboard_color
-        )
-        box.add_shape_mesh(
-            flap_11,
-            mesh=flap_11_mesh,
-            cfg=newton.ModelBuilder.ShapeConfig(
-                is_visible=True,
-                has_particle_collision=False,
-                has_shape_collision=False,
-            ),
-        )
-    
-    flap_12 = box.add_body(
-        mass=box_cfg.density * box_cfg.width * box_cfg.height * box_cfg.thickness,
-    )
-    
-    # Create cardboard mesh for visual appearance
-    if show_visuals:
-        flap_12_mesh = create_cardboard_box_mesh(
-            box_cfg.width / 2,
-            box_cfg.height / 2,
-            box_cfg.thickness / 2,
-            box_cfg.cardboard_color
-        )
-        box.add_shape_mesh(
-            flap_12,
-            mesh=flap_12_mesh,
-            cfg=newton.ModelBuilder.ShapeConfig(
-                is_visible=True,
-                has_particle_collision=False,
-                has_shape_collision=False,
-            ),
-        )
-    
-    # Add collision shape
-    box.add_shape_box(
-        flap_12,
-        hx=box_cfg.width / 2 - box_cfg.contact_offset,
-        hy=box_cfg.height / 2 - box_cfg.contact_offset,
-        hz=box_cfg.thickness / 2,
-        cfg=newton.ModelBuilder.ShapeConfig(
-            is_visible=show_collision,
-            has_particle_collision=True,
-            has_shape_collision=True,
-        ),
-    )
-    
-    flap_21 = box.add_body(
-        mass=box_cfg.density * box_cfg.width * box_cfg.thickness * box_cfg.thickness,
-    )
-    
-    # Create cardboard mesh for visual appearance (thin flap)
-    if show_visuals:
-        flap_21_mesh = create_cardboard_box_mesh(
-            box_cfg.width / 2,
-            box_cfg.thickness,
-            box_cfg.thickness / 2,
-            box_cfg.cardboard_color
-        )
-        box.add_shape_mesh(
-            flap_21,
-            mesh=flap_21_mesh,
-            cfg=newton.ModelBuilder.ShapeConfig(
-                is_visible=True,
-                has_particle_collision=False,
-                has_shape_collision=False,
-            ),
-        )
-    
-    flap_22 = box.add_body(
-        mass=box_cfg.density * box_cfg.width * box_cfg.height * box_cfg.thickness,
-    )
-    
-    # Create cardboard mesh for visual appearance
-    if show_visuals:
-        flap_22_mesh = create_cardboard_box_mesh(
-            box_cfg.width / 2,
-            box_cfg.height / 2,
-            box_cfg.thickness / 2,
-            box_cfg.cardboard_color
-        )
-        box.add_shape_mesh(
-            flap_22,
-            mesh=flap_22_mesh,
-            cfg=newton.ModelBuilder.ShapeConfig(
-                is_visible=True,
-                has_particle_collision=False,
-                has_shape_collision=False,
-            ),
-        )
-    
-    # Add collision shape
-    box.add_shape_box(
-        flap_22,
-        hx=box_cfg.width / 2 - box_cfg.contact_offset,
-        hy=box_cfg.height / 2 - box_cfg.contact_offset,
-        hz=box_cfg.thickness / 2,
-        cfg=newton.ModelBuilder.ShapeConfig(
-            is_visible=show_collision,
-            has_particle_collision=True,
-            has_shape_collision=True,
-        ),
-    )
+    # # additional flaps
+    # flap_11 = box.add_body(
+    #     mass=box_cfg.density * box_cfg.width * box_cfg.thickness * box_cfg.thickness,
+    #     key="flap_11"
+    # )
 
-    # additional flaps joints
-    box.add_joint_revolute(
-        parent=flap_1,
-        child=flap_11,
-        parent_xform=wp.transform(p=wp.vec3(0.0, box_cfg.height / 2, 0.0)),
-        child_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.thickness, 0.0)),
-        axis=wp.vec3(1.0, 0.0, 0.0),
-        mode=newton.JointMode.TARGET_POSITION,
-        target=joint_cfg.default_joint_eq_pos,
-        friction=joint_cfg.friction,
-        target_ke=joint_cfg.target_ke,
-        target_kd=joint_cfg.target_kd,
-        limit_lower=joint_cfg.min_joint_limit,
-        limit_upper=joint_cfg.max_joint_limit,
-    )
-    box.add_joint_revolute(
-        parent=flap_11,
-        child=flap_12,
-        parent_xform=wp.transform(p=wp.vec3(0.0, box_cfg.thickness, 0.0)),
-        child_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.height / 2, 0.0)),
-        axis=wp.vec3(1.0, 0.0, 0.0),
-        mode=newton.JointMode.TARGET_POSITION,
-        target=joint_cfg.default_joint_eq_pos,
-        friction=joint_cfg.friction,
-        target_ke=joint_cfg.target_ke,
-        target_kd=joint_cfg.target_kd,
-        limit_lower=joint_cfg.min_joint_limit,
-        limit_upper=joint_cfg.max_joint_limit,
-    )
-    box.add_joint_revolute(
-        parent=flap_2,
-        child=flap_21,
-        parent_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.height / 2, 0.0)),
-        child_xform=wp.transform(p=wp.vec3(0.0, box_cfg.thickness, 0.0)),
-        axis=wp.vec3(1.0, 0.0, 0.0),
-        mode=newton.JointMode.TARGET_POSITION,
-        target=joint_cfg.default_joint_eq_pos,
-        friction=joint_cfg.friction,
-        target_ke=joint_cfg.target_ke,
-        target_kd=joint_cfg.target_kd,
-        limit_lower=joint_cfg.min_joint_limit,
-        limit_upper=joint_cfg.max_joint_limit,
-    )
-    box.add_joint_revolute(
-        parent=flap_21,
-        child=flap_22,
-        parent_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.thickness, 0.0)),
-        child_xform=wp.transform(p=wp.vec3(0.0, box_cfg.height / 2, 0.0)),
-        axis=wp.vec3(1.0, 0.0, 0.0),
-        mode=newton.JointMode.TARGET_POSITION,
-        target=joint_cfg.default_joint_eq_pos,
-        friction=joint_cfg.friction,
-        target_ke=joint_cfg.target_ke,
-        target_kd=joint_cfg.target_kd,
-        limit_lower=joint_cfg.min_joint_limit,
-        limit_upper=joint_cfg.max_joint_limit,
-    )
+    # # Create cardboard mesh for visual appearance (thin flap)
+    # if show_visuals:
+    #     flap_11_mesh = create_cardboard_box_mesh(
+    #         box_cfg.width / 2,
+    #         box_cfg.thickness,
+    #         box_cfg.thickness / 2,
+    #         box_cfg.cardboard_color
+    #     )
+    #     box.add_shape_mesh(
+    #         flap_11,
+    #         mesh=flap_11_mesh,
+    #         cfg=newton.ModelBuilder.ShapeConfig(
+    #             is_visible=True,
+    #             has_particle_collision=False,
+    #             has_shape_collision=False,
+    #         ),
+    #     )
+    
+    # flap_12 = box.add_body(
+    #     mass=box_cfg.density * box_cfg.width * box_cfg.height * box_cfg.thickness,
+    #     key="flap_12"
+    # )
+    
+    # # Create cardboard mesh for visual appearance
+    # if show_visuals:
+    #     flap_12_mesh = create_cardboard_box_mesh(
+    #         box_cfg.width / 2,
+    #         box_cfg.height / 2,
+    #         box_cfg.thickness / 2,
+    #         box_cfg.cardboard_color
+    #     )
+    #     box.add_shape_mesh(
+    #         flap_12,
+    #         mesh=flap_12_mesh,
+    #         cfg=newton.ModelBuilder.ShapeConfig(
+    #             is_visible=True,
+    #             has_particle_collision=False,
+    #             has_shape_collision=False,
+    #         ),
+    #     )
+    
+    # # Add collision shape
+    # box.add_shape_box(
+    #     flap_12,
+    #     hx=box_cfg.width / 2 - box_cfg.contact_offset,
+    #     hy=box_cfg.height / 2 - box_cfg.contact_offset,
+    #     hz=box_cfg.thickness / 2,
+    #     cfg=newton.ModelBuilder.ShapeConfig(
+    #         is_visible=show_collision,
+    #         has_particle_collision=True,
+    #         has_shape_collision=True,
+    #     ),
+    # )
+    
+    # flap_21 = box.add_body(
+    #     mass=box_cfg.density * box_cfg.width * box_cfg.thickness * box_cfg.thickness,
+    #     key="flap_21"
+    # )
+    
+    # # Create cardboard mesh for visual appearance (thin flap)
+    # if show_visuals:
+    #     flap_21_mesh = create_cardboard_box_mesh(
+    #         box_cfg.width / 2,
+    #         box_cfg.thickness,
+    #         box_cfg.thickness / 2,
+    #         box_cfg.cardboard_color
+    #     )
+    #     box.add_shape_mesh(
+    #         flap_21,
+    #         mesh=flap_21_mesh,
+    #         cfg=newton.ModelBuilder.ShapeConfig(
+    #             is_visible=True,
+    #             has_particle_collision=False,
+    #             has_shape_collision=False,
+    #         ),
+    #     )
+    
+    # flap_22 = box.add_body(
+    #     mass=box_cfg.density * box_cfg.width * box_cfg.height * box_cfg.thickness,
+    #     key="flap_22"
+    # )
+
+    
+    # # Create cardboard mesh for visual appearance
+    # if show_visuals:
+    #     flap_22_mesh = create_cardboard_box_mesh(
+    #         box_cfg.width / 2,
+    #         box_cfg.height / 2,
+    #         box_cfg.thickness / 2,
+    #         box_cfg.cardboard_color
+    #     )
+    #     box.add_shape_mesh(
+    #         flap_22,
+    #         mesh=flap_22_mesh,
+    #         cfg=newton.ModelBuilder.ShapeConfig(
+    #             is_visible=True,
+    #             has_particle_collision=False,
+    #             has_shape_collision=False,
+    #         ),
+    #     )
+    
+    # # Add collision shape
+    # box.add_shape_box(
+    #     flap_22,
+    #     hx=box_cfg.width / 2 - box_cfg.contact_offset,
+    #     hy=box_cfg.height / 2 - box_cfg.contact_offset,
+    #     hz=box_cfg.thickness / 2,
+    #     cfg=newton.ModelBuilder.ShapeConfig(
+    #         is_visible=show_collision,
+    #         has_particle_collision=True,
+    #         has_shape_collision=True,
+    #     ),
+    # )
+
+    # # additional flaps joints
+    # box.add_joint_revolute(
+    #     parent=flap_1,
+    #     child=flap_11,
+    #     parent_xform=wp.transform(p=wp.vec3(0.0, box_cfg.height / 2, 0.0)),
+    #     child_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.thickness, 0.0)),
+    #     axis=wp.vec3(1.0, 0.0, 0.0),
+    #     mode=newton.JointMode.TARGET_POSITION,
+    #     target=joint_cfg.default_joint_eq_pos,
+    #     friction=joint_cfg.friction,
+    #     target_ke=joint_cfg.target_ke,
+    #     target_kd=joint_cfg.target_kd,
+    #     limit_lower=joint_cfg.min_joint_limit,
+    #     limit_upper=joint_cfg.max_joint_limit,
+    # )
+    # box.add_joint_revolute(
+    #     parent=flap_11,
+    #     child=flap_12,
+    #     parent_xform=wp.transform(p=wp.vec3(0.0, box_cfg.thickness, 0.0)),
+    #     child_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.height / 2, 0.0)),
+    #     axis=wp.vec3(1.0, 0.0, 0.0),
+    #     mode=newton.JointMode.TARGET_POSITION,
+    #     target=joint_cfg.default_joint_eq_pos,
+    #     friction=joint_cfg.friction,
+    #     target_ke=joint_cfg.target_ke,
+    #     target_kd=joint_cfg.target_kd,
+    #     limit_lower=joint_cfg.min_joint_limit,
+    #     limit_upper=joint_cfg.max_joint_limit,
+    # )
+    # box.add_joint_revolute(
+    #     parent=flap_2,
+    #     child=flap_21,
+    #     parent_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.height / 2, 0.0)),
+    #     child_xform=wp.transform(p=wp.vec3(0.0, box_cfg.thickness, 0.0)),
+    #     axis=wp.vec3(1.0, 0.0, 0.0),
+    #     mode=newton.JointMode.TARGET_POSITION,
+    #     target=joint_cfg.default_joint_eq_pos,
+    #     friction=joint_cfg.friction,
+    #     target_ke=joint_cfg.target_ke,
+    #     target_kd=joint_cfg.target_kd,
+    #     limit_lower=joint_cfg.min_joint_limit,
+    #     limit_upper=joint_cfg.max_joint_limit,
+    # )
+    # box.add_joint_revolute(
+    #     parent=flap_21,
+    #     child=flap_22,
+    #     parent_xform=wp.transform(p=wp.vec3(0.0, -box_cfg.thickness, 0.0)),
+    #     child_xform=wp.transform(p=wp.vec3(0.0, box_cfg.height / 2, 0.0)),
+    #     axis=wp.vec3(1.0, 0.0, 0.0),
+    #     mode=newton.JointMode.TARGET_POSITION,
+    #     target=joint_cfg.default_joint_eq_pos,
+    #     friction=joint_cfg.friction,
+    #     target_ke=joint_cfg.target_ke,
+    #     target_kd=joint_cfg.target_kd,
+    #     limit_lower=joint_cfg.min_joint_limit,
+    #     limit_upper=joint_cfg.max_joint_limit,
+    # )
 
     return box
