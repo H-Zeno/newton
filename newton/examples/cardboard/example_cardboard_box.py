@@ -45,7 +45,7 @@ class CardboardBox:
         if solver_type == "mujoco":
             self.solver = newton.solvers.SolverMuJoCo(model=self.model, iterations=20, njmax=128)
         elif solver_type == "xpbd":
-            self.solver = newton.solvers.SolverXPBD(model=self.model)
+            self.solver = newton.solvers.SolverXPBD(model=self.model, iterations=20)
         elif solver_type == "featherstone":
             self.solver = newton.solvers.SolverFeatherstone(model=self.model, update_mass_matrix_interval=1, angular_damping=0.1)
 

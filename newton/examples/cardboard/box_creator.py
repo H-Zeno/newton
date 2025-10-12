@@ -19,19 +19,19 @@ class BoxConfiguration:
 @dataclass
 class CardboardJointConfiguration:
     default_joint_eq_pos: float = float(wp.radians(7.0))
-    target_ke: float = 50.0
-    target_kd: float = 0.7
+    target_ke: float = 11.5 #50.0
+    target_kd: float = 0.35 #0.7
     friction: float = 0.0
-    min_joint_eq_pos: float = float(wp.radians(-43.0))
-    max_joint_eq_pos: float = float(wp.radians(43.0))
+    min_joint_eq_pos: float = float(wp.radians(-52.0))
+    max_joint_eq_pos: float = float(wp.radians(52.0))
     min_joint_limit: float = float(wp.radians(-178.0))
     max_joint_limit: float = float(wp.radians(178.0))
     plasticity_angle: float = float(wp.radians(35.0))
-    resistance_ke: float = 3.5
+    resistance_ke: float = 3.7
 
 
 
-def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration, key: str = "cardboard_box", show_visuals: bool = True) -> newton.ModelBuilder:
+def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration, key: str = "cardboard_box", show_visuals: bool = True, show_collision: bool = True) -> newton.ModelBuilder:
     box = newton.ModelBuilder()
 
     box.add_articulation(key=key)
@@ -51,17 +51,17 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
             has_shape_collision=False,
         ),
     )
-    # box.add_shape_box(
-    #     base,
-    #     hx=box_cfg.width / 2 - box_cfg.contact_offset,
-    #     hy=box_cfg.length / 2 - box_cfg.contact_offset,
-    #     hz=box_cfg.thickness / 2,
-    #     cfg=newton.ModelBuilder.ShapeConfig(
-    #         is_visible=show_collision,
-    #         has_particle_collision=True,
-    #         has_shape_collision=True,
-    #     ),
-    # )
+    box.add_shape_box(
+        base,
+        hx=box_cfg.width / 2 - box_cfg.contact_offset,
+        hy=box_cfg.length / 2 - box_cfg.contact_offset,
+        hz=box_cfg.thickness / 2,
+        cfg=newton.ModelBuilder.ShapeConfig(
+            is_visible=show_collision,
+            has_particle_collision=True,
+            has_shape_collision=True,
+        ),
+    )
 
     # fix the base
     box.add_joint_fixed(
@@ -85,17 +85,17 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
             has_shape_collision=False,
         ),
     )
-    # box.add_shape_box(
-    #     flap_1,
-    #     hx=box_cfg.width / 2 - box_cfg.contact_offset,
-    #     hy=box_cfg.height / 2 - box_cfg.contact_offset,
-    #     hz=box_cfg.thickness / 2,
-    #     cfg=newton.ModelBuilder.ShapeConfig(
-    #         is_visible=show_collision,
-    #         has_particle_collision=True,
-    #         has_shape_collision=True,
-    #     ),
-    # )
+    box.add_shape_box(
+        flap_1,
+        hx=box_cfg.width / 2 - box_cfg.contact_offset,
+        hy=box_cfg.height / 2 - box_cfg.contact_offset,
+        hz=box_cfg.thickness / 2,
+        cfg=newton.ModelBuilder.ShapeConfig(
+            is_visible=show_collision,
+            has_particle_collision=True,
+            has_shape_collision=True,
+        ),
+    )
     flap_2 = box.add_body(
         mass=box_cfg.density * box_cfg.width * box_cfg.height * box_cfg.thickness,
     )
@@ -110,17 +110,17 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
             has_shape_collision=False,
         ),
     )
-    # box.add_shape_box(
-    #     flap_2,
-    #     hx=box_cfg.width / 2 - box_cfg.contact_offset,
-    #     hy=box_cfg.height / 2 - box_cfg.contact_offset,
-    #     hz=box_cfg.thickness / 2,
-    #     cfg=newton.ModelBuilder.ShapeConfig(
-    #         is_visible=show_collision,
-    #         has_particle_collision=True,
-    #         has_shape_collision=True,
-    #     ),
-    # )
+    box.add_shape_box(
+        flap_2,
+        hx=box_cfg.width / 2 - box_cfg.contact_offset,
+        hy=box_cfg.height / 2 - box_cfg.contact_offset,
+        hz=box_cfg.thickness / 2,
+        cfg=newton.ModelBuilder.ShapeConfig(
+            is_visible=show_collision,
+            has_particle_collision=True,
+            has_shape_collision=True,
+        ),
+    )
 
     # flap_3 = box.add_body(
     #     mass=cfg.density * cfg.length * cfg.height * cfg.thickness,
