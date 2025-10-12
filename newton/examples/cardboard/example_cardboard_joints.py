@@ -194,7 +194,7 @@ class CardboardJoint:
     def simulate(self):
         for _ in range(self.sim_substeps):
             # idea:
-            # 1. define an equilibrium positionfor the cardboard joints
+            # 1. define an equilibrium position for the cardboard joints
             # 2. use a spring damper system to control the joints (as if there was an actuator inside)
 
             # Here we implement the controls of the joints!
