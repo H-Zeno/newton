@@ -155,7 +155,7 @@ if __name__ == "__main__":
     ik = InverseKinematicsSolver(use_gui=False)
 
     # Load multiple robots (or just one)
-    ik.load_robot("piper", "/home/fabio/git/questVR_ws/src/Piper_ros/src/piper_description/urdf/piper_description.urdf", ee_link_index=6)
+    ik.load_robot("piper", "/home/zhamers/piper-robot-server/URDF/Piper/piper_description.urdf", ee_link_index=6)
 
     # Define a target pose
     target_pos = [0.2, 0.0, 0.5]

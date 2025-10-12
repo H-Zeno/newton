@@ -3,11 +3,14 @@ import asyncio
 
 import numpy as np
 import warp as wp
-from ik_solver import InverseKinematicsSolver
+import os
+from dotenv import load_dotenv
+from newton.examples.cardboard.ik_solver import InverseKinematicsSolver
 from tactile_teleop_sdk import TactileAPI
 from newton.examples.cardboard.box_creator import create_box, BoxConfiguration, CardboardJointConfiguration
 from newton.examples.cardboard.cardboard_kernels import joint_update_equilibrium_kernel, joint_apply_signed_spring_torque_kernel
 
+load_dotenv()
 import newton
 
 robot_distance = 0.3  # Distance between the two robots
@@ -160,12 +163,18 @@ class Goal:
 async def main():
     wp.set_device("cuda")
 
-    tactile_api = TactileAPI("tr_-_DmhsI7tlOnj63BrXiLHf3viSJAoq67PNnbM9hv17M")
+    tactile_api = TactileAPI(api_key=os.getenv("TACTILE_API_KEY"))
+        
+    piper_urdf_path = "/home/zhamers/piper-robot-server/URDF/Piper/piper_description.urdf"
 
     await tactile_api.connect_vr_controller()
-
+    
     # viewer setup
     viewer = newton.viewer.ViewerGL(headless=False)
+    
+    # Connect camera streamer with viewer resolution
+    fb_w, fb_h = viewer.renderer.window.get_framebuffer_size()
+    await tactile_api.connect_camera_streamer(fb_h, fb_w)
 
     # sim params
     sim_time = 0.0
@@ -179,7 +188,6 @@ async def main():
     #
     # Cardboard box setup
     #
-
     joint_cfg = CardboardJointConfiguration()
     box_cfg = BoxConfiguration()
         
@@ -193,15 +201,14 @@ async def main():
     scene.add_builder(box_builder,
         environment=-1
     )
-
+    
     #
     # Robot setup
     #
 
-
     piper1 = newton.ModelBuilder()
     piper1.add_urdf(
-        "/home/fabio/git/questVR_ws/src/Piper_ros/src/piper_description/urdf/piper_description.urdf",
+        piper_urdf_path,
         xform=wp.transform(
             (0.0, -robot_distance, 0.0),
             wp.quat_identity(),
@@ -212,7 +219,7 @@ async def main():
     )
     piper2 = newton.ModelBuilder()
     piper2.add_urdf(
-        "/home/fabio/git/questVR_ws/src/Piper_ros/src/piper_description/urdf/piper_description.urdf",
+        piper_urdf_path,
         xform=wp.transform(
             (0.0, robot_distance, 0.0),
             wp.quat_identity(),
@@ -258,11 +265,15 @@ async def main():
 
     contacts = model.collide(state_0)
 
-
-
     control = model.control()
 
     viewer.set_model(model)
+
+    # Set camera position and orientation based on the provided coordinates
+    camera_pos = wp.vec3(-0.40, 0.13, 0.72)
+    camera_pitch = -33.4
+    camera_yaw = -360.4
+    viewer.set_camera(camera_pos, camera_pitch, camera_yaw)
 
     # not required for MuJoCo, but required for other solvers
     newton.eval_fk(model, model.joint_q, model.joint_qd, state_0)
@@ -271,7 +282,7 @@ async def main():
     ik = InverseKinematicsSolver(use_gui=False)
     ik.load_robot(
         "piper",
-        "/home/fabio/git/questVR_ws/src/Piper_ros/src/piper_description/urdf/piper_description.urdf",
+        piper_urdf_path,
         ee_link_index=6,
     )
 
@@ -288,7 +299,14 @@ async def main():
                     viewer.apply_forces(state_0)
 
                     contacts = model.collide(state_0)
+                    
+                    # Capture frame from viewer and send to VR headset
+                    frame_warp = viewer.get_frame()
+                    if frame_warp is not None:
+                        frame_numpy = frame_warp.numpy()
+                        await tactile_api.send_single_frame(frame_numpy)
 
+                    # Get controller goals
                     right_goal = await tactile_api.get_controller_goal("right")
                     left_goal = await tactile_api.get_controller_goal("left")
 
@@ -356,12 +374,13 @@ async def main():
                     ]
 
                     # set the joint targets
-                    control.joint_target.assign(
-                        wp.array(
-                            [0] * num_revolute_joints + joint_targets_right + joint_targets_left,
-                            dtype=wp.float32,
+                    if control.joint_target is not None:
+                        control.joint_target.assign(
+                            wp.array(
+                                [0] * num_revolute_joints + joint_targets_right + joint_targets_left,
+                                dtype=wp.float32,
+                            )
                         )
-                    )
 
                     # Update equilibrium position based on plasticity
                     wp.launch(
@@ -398,6 +417,9 @@ async def main():
         sim_time += frame_dt
 
     viewer.close()
+    # Cleanup tactile API resources
+    await tactile_api.disconnect_vr_controller()
+    await tactile_api.disconnect_camera_streamer()
     # Done
     ik.disconnect()
 
