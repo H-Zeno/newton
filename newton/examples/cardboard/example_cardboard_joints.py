@@ -107,7 +107,7 @@ class CardboardJoint:
         self.joint_eq_pos = self.joint_parameters["default_joint_eq_pos"]
         self.joint_eq_pos_array = wp.array([self.joint_eq_pos], dtype=float)
 
-        # define carboard plane dimensions
+        # define cardboard plane dimensions
         hx = 0.10
         hy = 0.40
         hz = 0.003
