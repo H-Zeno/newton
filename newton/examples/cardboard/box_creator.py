@@ -32,7 +32,7 @@ class CardboardJointConfiguration:
 
 
 
-def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration, key: str = "cardboard_box", show_visuals: bool = True, show_collision: bool = True) -> newton.ModelBuilder:
+def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration, key: str = "cardboard_box", show_visuals: bool = False, show_collision: bool = True) -> newton.ModelBuilder:
     box = newton.ModelBuilder()
 
     box.add_articulation(key=key)
