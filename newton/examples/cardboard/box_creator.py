@@ -111,7 +111,7 @@ def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration
     box.add_joint_fixed(
         parent=-1,
         child=base,
-        parent_xform=wp.transform(p=wp.vec3(0.0, 0.0, 2.0)),
+        parent_xform=wp.transform(p=wp.vec3(0.5, 0.0, 0.2)),
     )
 
     # flaps

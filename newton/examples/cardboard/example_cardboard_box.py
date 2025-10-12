@@ -2,13 +2,10 @@ from typing import Literal
 import newton
 import newton.examples
 import warp as wp
-from .box_creator import create_box, BoxConfiguration, CardboardJointConfiguration
-from .cardboard_kernels import joint_update_equilibrium_kernel, joint_apply_signed_spring_torque_kernel
-
+from newton.examples.cardboard.box_creator import create_box, BoxConfiguration, CardboardJointConfiguration
+from newton.examples.cardboard.cardboard_kernels import joint_update_equilibrium_kernel, joint_apply_signed_spring_torque_kernel
 
 wp.set_device("cuda")
-
-viewer = newton.viewer.ViewerGL(headless=False)
 
 class CardboardBox:
     def __init__(self, viewer, solver_type: Literal["mujoco", "xpbd", "featherstone"] = "mujoco"):
