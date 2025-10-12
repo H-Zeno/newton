@@ -14,12 +14,13 @@
 # limitations under the License.
 
 ###########################################################################
-# Example Basic Pendulum
+# Example: Cardboard Joint Simulation
 #
-# Shows how to set up a simulation of a simple double pendulum using the
-# newton.ModelBuilder() class.
+# Demonstrates how to set up and simulate cardboard joint mechanics using the
+# newton.ModelBuilder() class. This example showcases joint limits, plasticity,
+# and spring resistance as found in cardboard-like materials.
 #
-# Command: python -m newton.examples basic_pendulum
+# Command: python -m newton.examples.cardboard.example_cardboard_joints
 #
 ###########################################################################
 
