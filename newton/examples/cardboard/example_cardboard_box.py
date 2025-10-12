@@ -56,6 +56,13 @@ class CardboardBox:
 
         self.viewer.set_model(self.model)
 
+        # Set camera for better viewing of the cardboard box
+        # Box is at (0.5, 0.0, 0.3), so position camera above and at an angle
+        camera_pos = wp.vec3(0.91, -0.02, 2.71)  # Above and at an angle
+        camera_pitch = -37.7 
+        camera_yaw = -178.8  
+        self.viewer.set_camera(camera_pos, camera_pitch, camera_yaw)
+
         # not required for MuJoCo, but required for other solvers
         newton.eval_fk(self.model, self.state_0.joint_q, self.state_0.joint_qd, self.state_0)
         
