@@ -2,11 +2,24 @@ from typing import Literal
 import newton
 import newton.examples
 import warp as wp
-from newton.examples.cardboard.box_creator import create_box, BoxConfiguration, CardboardJointConfiguration
+from newton.examples.cardboard.box_creator import create_box, BoxConfiguration
 from newton.examples.cardboard.cardboard_kernels import joint_update_equilibrium_kernel, joint_apply_signed_spring_torque_kernel
-
+from dataclasses import dataclass
 wp.set_device("cuda")
 
+@dataclass
+class CardboardJointConfiguration:
+    default_joint_eq_pos: float = float(wp.radians(7.0))
+    target_ke: float = 11.5 #50.0
+    target_kd: float = 0.35 #0.7
+    friction: float = 0.0
+    min_joint_eq_pos: float = float(wp.radians(-52.0))
+    max_joint_eq_pos: float = float(wp.radians(52.0))
+    min_joint_limit: float = float(wp.radians(-178.0))
+    max_joint_limit: float = float(wp.radians(178.0))
+    plasticity_angle: float = float(wp.radians(35.0))
+    resistance_ke: float = 3.1 #3.7
+    
 class CardboardBox:
     def __init__(self, viewer, solver_type: Literal["mujoco", "xpbd", "featherstone"] = "mujoco"):
         
@@ -55,9 +68,9 @@ class CardboardBox:
 
         # Set camera for better viewing of the cardboard box
         # Box is at (0.5, 0.0, 0.3), so position camera above and at an angle
-        camera_pos = wp.vec3(0.91, -0.02, 2.71)  # Above and at an angle
-        camera_pitch = -37.7 
-        camera_yaw = -178.8  
+        camera_pos = wp.vec3(1.49, -0.00, 0.77)  # Above and at an angle
+        camera_pitch = -26.6
+        camera_yaw = -182.3
         self.viewer.set_camera(camera_pos, camera_pitch, camera_yaw)
 
         # not required for MuJoCo, but required for other solvers

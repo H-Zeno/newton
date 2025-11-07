@@ -27,6 +27,11 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "dotenv>=0.9.9",
+    "pybullet>=3.2.7",
+    "pyglet>=2.1.6",
+    "tactile-teleop-python-sdk",
+    "trimesh>=4.7.1",
+    "typing-extensions>=4.14.1",
     "warp-lang>=1.7.0.dev20250823",
 ]
 
@@ -105,6 +110,7 @@ explicit = true
 
 [tool.uv.sources]
 mujoco-warp = { git = "https://github.com/google-deepmind/mujoco_warp" }
+tactile-teleop-python-sdk = { path = "../tactile-teleop-python-sdk", editable = true }
 warp-lang = { index = "nvidia" }
 mujoco = { index = "mujoco" }
 torch = [{ index = "pytorch-cu129", extra = "torch-cu12" }]

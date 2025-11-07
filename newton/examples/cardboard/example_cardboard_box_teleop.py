@@ -1,17 +1,20 @@
 
 import asyncio
+import newton
+import os
 
 import numpy as np
 import warp as wp
-import os
+
 from dotenv import load_dotenv
+from dataclasses import dataclass
+
 from newton.examples.cardboard.ik_solver import InverseKinematicsSolver
-from tactile_teleop_sdk import TactileAPI
-from newton.examples.cardboard.box_creator import create_box, BoxConfiguration, CardboardJointConfiguration
+from newton.examples.cardboard.box_creator import create_box, BoxConfiguration
 from newton.examples.cardboard.cardboard_kernels import joint_update_equilibrium_kernel, joint_apply_signed_spring_torque_kernel
 
+from tactile_teleop_sdk import TactileAPI, TactileConfig
 load_dotenv()
-import newton
 
 robot_distance = 0.3  # Distance between the two robots
 
@@ -160,21 +163,41 @@ class Goal:
         return target_pos, target_ori, gripper_closed
 
 
+@dataclass
+class CardboardJointConfiguration:
+    default_joint_eq_pos: float = float(wp.radians(7.0))
+    target_ke: float = 0.115 #50.0
+    target_kd: float = 0.035 #0.7
+    friction: float = 0.05
+    min_joint_eq_pos: float = float(wp.radians(-52.0))
+    max_joint_eq_pos: float = float(wp.radians(52.0))
+    min_joint_limit: float = float(wp.radians(-178.0))
+    max_joint_limit: float = float(wp.radians(178.0))
+    plasticity_angle: float = float(wp.radians(35.0))
+    resistance_ke: float = 0.05
+    
 async def main():
     wp.set_device("cuda")
-
-    tactile_api = TactileAPI(api_key=os.getenv("TACTILE_API_KEY"))
-        
+    
     piper_urdf_path = "/home/zhamers/piper-robot-server/URDF/Piper/piper_description.urdf"
 
-    await tactile_api.connect_vr_controller()
+    tactile_config = TactileConfig.from_env()
+    api = TactileAPI(tactile_config)
+    await api.connect_robot()
     
     # viewer setup
     viewer = newton.viewer.ViewerGL(headless=False)
     
+    # Connect VR controls 
+    await api.connect_controller(type="parallel_gripper_vr_controller", robot_components=["left", "right"])
+
     # Connect camera streamer with viewer resolution
     fb_w, fb_h = viewer.renderer.window.get_framebuffer_size()
-    await tactile_api.connect_camera_streamer(fb_h, fb_w)
+    await api.connect_camera(camera_name="camera_0", height=fb_h, width=fb_w)
+    
+    
+    
+    
 
     # sim params
     sim_time = 0.0
@@ -304,11 +327,11 @@ async def main():
                     frame_warp = viewer.get_frame()
                     if frame_warp is not None:
                         frame_numpy = frame_warp.numpy()
-                        await tactile_api.send_single_frame(frame_numpy)
+                        await api.send_single_frame(frame_numpy)
 
                     # Get controller goals
-                    right_goal = await tactile_api.get_controller_goal("right")
-                    left_goal = await tactile_api.get_controller_goal("left")
+                    right_goal = await api.get_controller_goal("right")
+                    left_goal = await api.get_controller_goal("left")
 
                     # Get end-effector transforms in world frame
                     index = model.body_key.index("link6")
@@ -418,8 +441,7 @@ async def main():
 
     viewer.close()
     # Cleanup tactile API resources
-    await tactile_api.disconnect_vr_controller()
-    await tactile_api.disconnect_camera_streamer()
+    await api.disconnect_robot()
     # Done
     ik.disconnect()
 

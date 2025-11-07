@@ -4,7 +4,6 @@ import warp as wp
 
 import newton
 
-
 @dataclass
 class BoxConfiguration:
     width: float = 0.2
@@ -19,20 +18,6 @@ class BoxConfiguration:
 
     # cardboard visual properties
     cardboard_color: tuple[float, float, float] = (0.6, 0.4, 0.2)  # Brown cardboard color
-
-
-@dataclass
-class CardboardJointConfiguration:
-    default_joint_eq_pos: float = float(wp.radians(7.0))
-    target_ke: float = 0.115 #50.0
-    target_kd: float = 0.035 #0.7
-    friction: float = 0.05
-    min_joint_eq_pos: float = float(wp.radians(-52.0))
-    max_joint_eq_pos: float = float(wp.radians(52.0))
-    min_joint_limit: float = float(wp.radians(-178.0))
-    max_joint_limit: float = float(wp.radians(178.0))
-    plasticity_angle: float = float(wp.radians(35.0))
-    resistance_ke: float = 0.05
 
 
 def create_cardboard_box_mesh(hx: float, hy: float, hz: float, color: tuple[float, float, float]) -> newton.Mesh:
@@ -67,7 +52,7 @@ def create_cardboard_box_mesh(hx: float, hy: float, hz: float, color: tuple[floa
 
 
 
-def create_box(box_cfg: BoxConfiguration, joint_cfg: CardboardJointConfiguration, key: str = "cardboard_box", show_visuals: bool = False, show_collision: bool = False) -> newton.ModelBuilder:
+def create_box(box_cfg: BoxConfiguration, joint_cfg, key: str = "cardboard_box", show_visuals: bool = False, show_collision: bool = False) -> newton.ModelBuilder:
     box = newton.ModelBuilder()
 
     box.add_articulation(key=key)
